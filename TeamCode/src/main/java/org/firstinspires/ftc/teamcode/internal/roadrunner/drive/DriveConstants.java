@@ -22,20 +22,23 @@ public class DriveConstants {
     // These values are for your drive train motors/wheels NOT your odometry pods
     // TODO: Set the first four appropriately, and get a good estimate for track width
     // TODO: You will manually tune the track-width later
-    public static double TICKS_PER_REV = 537.6;
-    public static double MAX_RPM = 312;
+    public static final double TICKS_PER_REV = 537.6;
+    public static final double MAX_RPM = 312;
     public static double WHEEL_RADIUS = 1.89; // inches.
     public static double GEAR_RATIO = -19.2; // output (wheel) speed / input (motor) speed
     public static double TRACK_WIDTH = 11.5; // inches. DOESN'T necessarily need to reflect the ACTUAL track width
 
+
+
     // IMU Name
-    public static String IMU_NAME = "imu 1";
+    public static final String IMU_NAME = "imu 1";
+
 
     // For encoders on odometry ONLY
     // TODO: Set the first three appropriately, and get a good estimate of the track width
     // TODO: Track width will be tuned later
-    public static double ODOMETRY_TICKS_PER_REV = 8192; // ticks
-    public static double ODOMETRY_WHEEL_RADIUS = 0.75; // in
+    public static final double ODOMETRY_TICKS_PER_REV = 8192; // ticks
+    public static final double ODOMETRY_WHEEL_RADIUS = 0.75; // in
     // For standard dead wheels, this will be 1:1
     public static double ODOMETRY_GEAR_RATIO = -1;
     public static double ODOMETRY_FORWARD_OFFSET = 2d; // in
@@ -46,27 +49,29 @@ public class DriveConstants {
     public static double ODO_Y_MULTIPLIER = 1.00167; // Multiplier in the Y direction (for strafe/lateral dir)
 
     // TODO: Set these to your hardware map motor names
-    public static String FRONT_RIGHT_MOTOR = "frontRightMotor";
-    public static String FRONT_LEFT_MOTOR = "frontLeftMotor";
-    public static String BACK_RIGHT_MOTOR = "backRightMotor";
-    public static String BACK_LEFT_MOTOR = "backLeftMotor";
+    public static final String FRONT_RIGHT_MOTOR = "frontRightMotor";
+    public static final String FRONT_LEFT_MOTOR = "frontLeftMotor";
+    public static final String BACK_RIGHT_MOTOR = "backRightMotor";
+    public static final String BACK_LEFT_MOTOR = "backLeftMotor";
 
-    public static String LEFT_ENCODER = "frontRightMotor";
-    public static String RIGHT_ENCODER = "backRightMotor";
-    public static String STRAFE_ENCODER = "frontLeftMotor";
+    public static final String LEFT_ENCODER = "frontRightMotor";
+    public static final String RIGHT_ENCODER = "backRightMotor";
+    public static final String STRAFE_ENCODER = "frontLeftMotor";
+
 
     // TODO: Change motor directions {FL, FR, BL, BR}
-    public static DcMotorSimple.Direction[] motorDirections = { DcMotorSimple.Direction.REVERSE,
-            DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.FORWARD };
+    public static final DcMotorSimple.Direction[] motorDirections = {DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.FORWARD};
 
     // TODO: If your hub is mounted vertically
-    public static boolean HUB_MOUNTED_VERTICAL = false;
+    public static final boolean HUB_MOUNTED_VERTICAL = false;
+
+
 
     // TODO: If you want to use the VeloPID controller, set the var below to true
     // Most people say this tuning method is TRASH
     // false = you will use feedforward tuning
     // true = you will use VelocityPID tuning
-    public static boolean RUN_USING_ENCODER = false;
+    public static final boolean RUN_USING_ENCODER = false;
 
     // TODO: If using VelPID controller, update this with your tuned constants
     public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(0, 0, 0,
@@ -83,8 +88,7 @@ public class DriveConstants {
     // -----------
     // 0.5. Run the ManualFeedForwardTuner OpMode
     // 1. Set all three values to 0
-    // 2. Increase kV until the robot velocity graph (measured vs. target) shows
-    // that you are hitting the correct max velocity
+    // 2. Increase kV until the robot velocity graph (measured vs. target) shows that you are hitting the correct max velocity
     //
     //
     // 3. If you graph looks like triangles, increase the distance you travel VIA the dashboard (or the code itself)
@@ -96,9 +100,9 @@ public class DriveConstants {
     // kV             0.01                     0.017
     // kStatic        0.01                     0.05
     // kA             0.001          z          0.003
-    public static double kV = 0.0178; // 0.016 also seems to work sometimes
-    public static double kA = 0.006;
-    public static double kStatic = 0.03;
+    public static final double kV = 0.0178; // 0.016 also seems to work sometimes
+    public static final double kA = 0.006;
+    public static final double kStatic = 0.03;
 
 
     // 0.0176 -- 12.7 V
@@ -115,10 +119,11 @@ public class DriveConstants {
      * small and gradually increase them later after everything is working. All distance units are
      * inches.
      */
-    public static double MAX_VEL = 35;
-    public static double MAX_ACCEL = 20;
-    public static double MAX_ANG_VEL = 15;
-    public static double MAX_ANG_ACCEL = Math.toRadians(35);
+    public static final double MAX_VEL = 35;
+    public static final double MAX_ACCEL = 20;
+    public static final double MAX_ANG_VEL = 15;
+    public static final double MAX_ANG_ACCEL = Math.toRadians(35);
+
 
     public static double encoderTicksToInches(double ticks) {
         return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
