@@ -37,7 +37,7 @@ public class DriveConstants {
     public static double ODOMETRY_TICKS_PER_REV = 8192; // ticks
     public static double ODOMETRY_WHEEL_RADIUS = 0.75; // in
     // For standard dead wheels, this will be 1:1
-    public static double ODOMETRY_GEAR_RATIO = 1;
+    public static double ODOMETRY_GEAR_RATIO = -1;
     public static double ODOMETRY_FORWARD_OFFSET = 2d; // in
     public static double ODOMETRY_TRACK_WIDTH = 6.625; // in
 
