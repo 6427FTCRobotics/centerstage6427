@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.internal;
 
+import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 /**
  * This is just an extension of the OpenCVPipline class which adds support for vision output to the OptimizedRobot Class
  */
-public abstract class OptimizedOpenCVPipeline extends OpenCvPipeline {
+public abstract class OptimizedOpenCVPipeline extends OpenCvPipeline implements CameraStreamSource {
 
     /**
      * Our output for vision -- TODO: set this value in your Pipeline

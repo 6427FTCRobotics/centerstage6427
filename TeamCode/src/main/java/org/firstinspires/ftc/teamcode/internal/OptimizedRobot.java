@@ -67,7 +67,7 @@ public class OptimizedRobot {
     /**
      * Stores an instance of our OpenCV Loader, which should never need to be edited unless for version changes
      */
-    private OpenCVLoader loader = null;
+    public OpenCVLoader loader = null;
 
     // Ignore these, these are internal stuff
     private boolean hasInitializedMotors = false;
@@ -329,20 +329,16 @@ public class OptimizedRobot {
      * @param controlName The name of the control specified in your mapping
      * @return The double value associated with the control
      */
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Experimental
     public double getControlFloat(String controlName) {
         ControllerMapping.ControlInput input = controlMap.get(controlName);
 
         if (input.controller != ControllerMapping.Controller.BOTH) {
             OptimizedController controller = input.controller == ControllerMapping.Controller.CONTROLLER1 ? controller1 : controller2;
-            if (input.type == ControllerMapping.Type.FLOAT) {
                 return controller.getFloat(input.key);
-            }
         } else {
             return Math.abs(controller1.getFloat(input.key)) > Math.abs(controller2.getFloat(input.key)) ? controller1.getFloat(input.key) : controller2.getFloat(input.key);
         }
-        return 0;
     }
 
     /**

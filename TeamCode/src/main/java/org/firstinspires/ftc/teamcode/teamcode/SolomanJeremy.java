@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.internal.OptimizedController;
 import org.firstinspires.ftc.teamcode.internal.OptimizedRobot;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Autonomous
 public class SolomanJeremy  extends LinearOpMode {
@@ -25,7 +24,7 @@ public class SolomanJeremy  extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         OptimizedController controller1 = new OptimizedController(gamepad1);
         OptimizedController controller2 = new OptimizedController(gamepad2);
-        OptimizedRobot robot = new OptimizedRobot(controller1, controller2, telemetry, hardwareMap, new FreightFrenzyControllerMapping());
+        OptimizedRobot robot = new OptimizedRobot(controller1, controller2, telemetry, hardwareMap, new CenterStageControllerMapping());
         waitForStart();
         while (!isStopRequested()) {
 

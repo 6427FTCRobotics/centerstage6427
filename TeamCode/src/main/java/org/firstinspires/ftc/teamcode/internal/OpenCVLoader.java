@@ -8,9 +8,10 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
+import com.acmerobotics.dashboard.FtcDashboard;
 
 public class OpenCVLoader {
-    private OpenCvWebcam phoneCam;
+    public OpenCvWebcam phoneCam;
     public OptimizedOpenCVPipeline pipeline;
     private final HardwareMap map;
     private final Point translation = null;
@@ -28,6 +29,7 @@ public class OpenCVLoader {
         if (RUN_ON_APP) {
             int cameraMonitorViewId = map.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", map.appContext.getPackageName());
             phoneCam = OpenCvCameraFactory.getInstance().createWebcam(map.get(WebcamName.class, RobotConfig.WEBCAM_NAME), cameraMonitorViewId);
+            FtcDashboard.getInstance().startCameraStream(pipeline, 0);
         } else {
             phoneCam = OpenCvCameraFactory.getInstance().createWebcam(map.get(WebcamName.class, RobotConfig.WEBCAM_NAME));
         }
@@ -38,7 +40,7 @@ public class OpenCVLoader {
         phoneCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                phoneCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                phoneCam.startStreaming(800, 448, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override

@@ -4,19 +4,18 @@ import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.internal.NumberFunctions;
 import org.firstinspires.ftc.teamcode.internal.OptimizedController;
 import org.firstinspires.ftc.teamcode.internal.OptimizedRobot;
 import org.firstinspires.ftc.teamcode.internal.RobotConfig;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+@Disabled
 @TeleOp(name = "Final TeleOP")
 public class FinalTeleOp extends OpMode {
     DcMotor duckSpinner, arm, odometry, intake;
@@ -38,7 +37,7 @@ public class FinalTeleOp extends OpMode {
 
         log = telemetry.log();
 
-        robot = new OptimizedRobot(controller1, controller2, telemetry, hardwareMap, new FreightFrenzyControllerMapping());
+        robot = new OptimizedRobot(controller1, controller2, telemetry, hardwareMap, new CenterStageControllerMapping());
         duckSpinner = robot.getMotor("duckSpinner");
         arm = robot.getMotor("arm", DcMotor.RunMode.RUN_TO_POSITION);
         odometry = robot.getMotor("odometry", DcMotor.RunMode.RUN_USING_ENCODER);

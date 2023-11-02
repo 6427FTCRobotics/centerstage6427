@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.internal.OptimizedController;
 import org.firstinspires.ftc.teamcode.internal.OptimizedRobot;
@@ -18,7 +15,7 @@ public class Test2 extends OpMode {
     public void init() {
         controller1 = new OptimizedController(gamepad1);
         controller2 = new OptimizedController(gamepad2);
-        robot = new OptimizedRobot(controller1, controller2, telemetry, hardwareMap, new FreightFrenzyControllerMapping());
+        robot = new OptimizedRobot(controller1, controller2, telemetry, hardwareMap, new CenterStageControllerMapping());
 //        robot.getInternalRR().setWeightedDrivePower();
     }
 
