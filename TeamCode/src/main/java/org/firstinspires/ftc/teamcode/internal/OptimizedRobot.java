@@ -244,9 +244,7 @@ public class OptimizedRobot {
      */
     @Experimental
     public boolean synchronousDelayGateOPEN(String delayName, double runtime, double delayInSeconds) {
-        if (delayInfoBools.get(delayName) == null) {
-            delayInfoBools.put(delayName, false);
-        }
+        delayInfoBools.putIfAbsent(delayName, false);
 
         if (!delayInfoBools.get(delayName)) {
             delayInfoTimes.put(delayName, runtime);
