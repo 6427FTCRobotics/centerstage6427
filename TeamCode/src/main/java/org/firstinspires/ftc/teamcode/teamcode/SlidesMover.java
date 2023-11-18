@@ -13,8 +13,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class SlidesMover extends LinearOpMode {
     public static int targetPos = 0;
     public static double power = 1;
-    public static double leftPos = 0.9;
-    public static double outtakePos = 0.2;
+    public static double leftPos = 0.83;
+    public static double outtakePos = 0.4;
     public static double intakeServoSpeed = 0;
     public static double intakeMotorSpeed = 0;
     @Override
@@ -35,7 +35,7 @@ public class SlidesMover extends LinearOpMode {
         rightSlide.setPower(power);
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         CRServo spinnerServo = hardwareMap.crservo.get("spinnerServo");
-        DcMotor intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
+//        DcMotor intakeMotor = hardwareMap.dcMotor.get("intakeMotor");
         waitForStart();
         while (!isStopRequested() && opModeIsActive()) {
             flipperLeft.setPosition(leftPos);
@@ -44,7 +44,7 @@ public class SlidesMover extends LinearOpMode {
             leftSlide.setTargetPosition(targetPos);
             rightSlide.setTargetPosition(targetPos);
             spinnerServo.setPower(intakeServoSpeed);
-            intakeMotor.setPower(intakeMotorSpeed);
+//            intakeMotor.setPower(intakeMotorSpeed);
         }
     }
 }

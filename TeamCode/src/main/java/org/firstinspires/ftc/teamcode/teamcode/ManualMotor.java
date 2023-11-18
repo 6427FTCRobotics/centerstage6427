@@ -14,6 +14,7 @@ public class ManualMotor extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         DcMotor motor = hardwareMap.dcMotor.get(name);
+        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         waitForStart();
         while (opModeIsActive() && !isStopRequested()) {
             motor.setPower(power);

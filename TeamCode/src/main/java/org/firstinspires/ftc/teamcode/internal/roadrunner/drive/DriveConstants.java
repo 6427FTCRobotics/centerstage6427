@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.internal.roadrunner.drive;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 
 /*
  * Constants shared between multiple drive types.
@@ -18,6 +18,10 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
  */
 @Config
 public class DriveConstants {
+    public static RevHubOrientationOnRobot.LogoFacingDirection LOGO_FACING_DIR =
+            RevHubOrientationOnRobot.LogoFacingDirection.UP;
+    public static RevHubOrientationOnRobot.UsbFacingDirection USB_FACING_DIR =
+            RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
     // These values are for your drive train motors/wheels NOT your odometry pods
     // TODO: Set the first four appropriately, and get a good estimate for track width
@@ -37,10 +41,10 @@ public class DriveConstants {
     // For encoders on odometry ONLY
     // TODO: Set the first three appropriately, and get a good estimate of the track width
     // TODO: Track width will be tuned later
-    public static final double ODOMETRY_TICKS_PER_REV = 8192; // ticks
-    public static final double ODOMETRY_WHEEL_RADIUS = 0.75; // in
+    public static final double ODOMETRY_TICKS_PER_REV = 2000; // ticks
+    public static final double ODOMETRY_WHEEL_RADIUS = 0.94; // in
     // For standard dead wheels, this will be 1:1
-    public static double ODOMETRY_GEAR_RATIO = -1;
+    public static double ODOMETRY_GEAR_RATIO = 1;
     public static double ODOMETRY_FORWARD_OFFSET = 2d; // in
     public static double ODOMETRY_TRACK_WIDTH = 6.625; // in
 

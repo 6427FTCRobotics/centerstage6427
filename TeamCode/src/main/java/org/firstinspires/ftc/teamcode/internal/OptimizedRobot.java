@@ -5,6 +5,7 @@ import android.os.Build;
 import androidx.annotation.RequiresApi;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -232,6 +233,11 @@ public class OptimizedRobot {
         mecanumDrive.followTrajectory(trajectory.build());
     }
 
+    @Repackaged
+    public void followRRTrajectory(Trajectory trajectory) {
+        mecanumDrive.followTrajectory(trajectory);
+    }
+
     /**
      * Useful delay method for teleop opmodes -- want to delay a piece of code without stopping the thread entirely? Use THIS!
      * NOTE: This method will only OPEN the gate after the delay, and will not close it. You'll need to call {@link #synchronousDelayGateCLOSE(String)} to close it!
@@ -252,6 +258,12 @@ public class OptimizedRobot {
         } else return runtime - delayInfoTimes.get(delayName) >= delayInSeconds;
 
         return false;
+    }
+
+    @Experimental
+    public void synchronousDelayGateFINISH(String delayName) {
+        delayInfoTimes.put(delayName, -1000d);
+        delayInfoBools.put(delayName, true);
     }
 
     /**
@@ -275,9 +287,7 @@ public class OptimizedRobot {
      */
     @Experimental
     public boolean synchronousDelayGateCOMPLETE(String delayName, double runtime, double delayInSeconds) {
-        if (delayInfoBools.get(delayName) == null) {
-            delayInfoBools.put(delayName, false);
-        }
+        delayInfoBools.putIfAbsent(delayName, false);
 
         if (!delayInfoBools.get(delayName)) {
             delayInfoTimes.put(delayName, runtime);

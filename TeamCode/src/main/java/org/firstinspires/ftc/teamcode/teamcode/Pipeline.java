@@ -57,19 +57,19 @@ public class Pipeline extends OptimizedOpenCVPipeline {
     private boolean needToSetDecimation;
     private final Object decimationSync = new Object();
 
-    private final AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565));
+    private final AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(800, 448, Bitmap.Config.RGB_565));
 
     private Mode mode = Mode.Spike;
     private Team team;
 
     public static int spikeSize = 5;
 
-    public static int leftSpikeTopLeftX = 0;
-    public static int leftSpikeTopLeftY = 0;
-    public static int centerSpikeTopLeftX = 0;
-    public static int centerSpikeTopLeftY = 0;
-    public static int rightSpikeTopLeftX = 0;
-    public static int rightSpikeTopLeftY = 0;
+    public static int leftSpikeTopLeftX = 225;
+    public static int leftSpikeTopLeftY = 375;
+    public static int centerSpikeTopLeftX = 500;
+    public static int centerSpikeTopLeftY = 375;
+    public static int rightSpikeTopLeftX = 750;
+    public static int rightSpikeTopLeftY = 375;
 
     public SpikePos spikePos = null;
 
@@ -79,10 +79,10 @@ public class Pipeline extends OptimizedOpenCVPipeline {
 
     @Override
     public void init(Mat mat) {
+        leftSubmat = mat.submat(leftSpikeTopLeftY, leftSpikeTopLeftY + spikeSize, leftSpikeTopLeftX, leftSpikeTopLeftX + spikeSize);
+        centerSubmat = mat.submat(centerSpikeTopLeftY, centerSpikeTopLeftY + spikeSize, centerSpikeTopLeftX, centerSpikeTopLeftX + spikeSize);
+        rightSubmat = mat.submat(rightSpikeTopLeftY, rightSpikeTopLeftY + spikeSize, rightSpikeTopLeftX, rightSpikeTopLeftX + spikeSize);
         lastFrame.set(Bitmap.createBitmap(mat.width(), mat.height(), Bitmap.Config.RGB_565));
-        leftSubmat = mat.submat(leftSpikeTopLeftX, leftSpikeTopLeftY, leftSpikeTopLeftX + spikeSize, leftSpikeTopLeftY + spikeSize);
-        centerSubmat = mat.submat(centerSpikeTopLeftX, centerSpikeTopLeftY, centerSpikeTopLeftX + spikeSize, centerSpikeTopLeftY + spikeSize);
-        rightSubmat = mat.submat(rightSpikeTopLeftX, rightSpikeTopLeftY, rightSpikeTopLeftX + spikeSize, rightSpikeTopLeftY + spikeSize);
     }
 
     public Pipeline(double tagsize, double fx, double fy, double cx, double cy, Team team) {
@@ -140,21 +140,21 @@ public class Pipeline extends OptimizedOpenCVPipeline {
                 input,
                 new Point(leftSpikeTopLeftX, leftSpikeTopLeftY),
                 new Point(leftSpikeTopLeftX + spikeSize, leftSpikeTopLeftY + spikeSize),
-                leftColor,
+                new Scalar(0, 0, 0),
                 2
         );
         Imgproc.rectangle(
                 input,
                 new Point(centerSpikeTopLeftX, centerSpikeTopLeftY),
                 new Point(centerSpikeTopLeftX + spikeSize, centerSpikeTopLeftY + spikeSize),
-                centerColor,
+                new Scalar(0, 0, 0),
                 2
         );
         Imgproc.rectangle(
                 input,
                 new Point(rightSpikeTopLeftX, rightSpikeTopLeftY),
                 new Point(rightSpikeTopLeftX + spikeSize, rightSpikeTopLeftY + spikeSize),
-                rightColor,
+                new Scalar(0, 0, 0),
                 2
         );
         if (leftColor.val[team.colorOffset] > centerColor.val[team.colorOffset] && leftColor.val[team.colorOffset] > rightColor.val[team.colorOffset]) {

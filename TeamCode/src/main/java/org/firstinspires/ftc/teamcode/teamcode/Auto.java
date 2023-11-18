@@ -1,18 +1,28 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.internal.OptimizedController;
 import org.firstinspires.ftc.teamcode.internal.OptimizedRobot;
+import org.firstinspires.ftc.teamcode.internal.roadrunner.drive.SampleMecanumDrive;
 import org.openftc.apriltag.AprilTagDetection;
 
 import java.util.ArrayList;
 import java.util.Optional;
+
+import static org.firstinspires.ftc.teamcode.teamcode.Shared.*;
 
 @Autonomous
 @Config
@@ -33,26 +43,66 @@ public class Auto extends LinearOpMode {
     OptimizedRobot robot;
     int numFramesWithoutDetection = 0;
 
+    public static int d1 = 30;
+    public static int d2 = 24;
+    public static int d3 = 24;
+    Servo flipperLeft, flipperRight, outtakeServo;
+    CRServo spinnerServo;
+    DcMotor leftSlide, rightSlide, intakeMotor;
+    public static double outtakePower = 0.6;
 
     @Override
     public void runOpMode() throws InterruptedException {
         robot = new OptimizedRobot(telemetry, hardwareMap);
+        // Cursed but will start the robot in the flipped state
+        robot.synchronousDelayGateFINISH("flipping");
+
         robot.initializeRoadRunner();
-        pipeline = new Pipeline(0.0508, fx, fy, cx, cy, Pipeline.Team.Blue);
+        robot.getInternalRR().setPoseEstimate(new Pose2d(0, 0));
+
+        flipperLeft = robot.getServo("flipperLeft");
+        flipperRight = robot.getServo("flipperRight");
+        outtakeServo = robot.getServo("outtakeServo");
+        flipperLeft.setPosition(intakeFlipperPos);
+        flipperRight.setPosition(1 - intakeFlipperPos);
+        outtakeServo.setPosition(outtakeIntakePos);
+        leftSlide = robot.getMotor("leftSlide", DcMotor.RunMode.RUN_TO_POSITION, DcMotorSimple.Direction.REVERSE);
+        leftSlide.setPower(liftPower);
+        rightSlide = robot.getMotor("rightSlide", DcMotor.RunMode.RUN_TO_POSITION);
+        rightSlide.setPower(liftPower);
+        spinnerServo = hardwareMap.crservo.get("spinnerServo");
+        intakeMotor = robot.getMotor("intakeMotor", DcMotorSimple.Direction.REVERSE);
+
+        robot.initializeRoadRunner();
+        SampleMecanumDrive drive = robot.getInternalRR();
+        Trajectory traj1 = drive.trajectoryBuilder(new Pose2d()).back(d1).build();
+        Trajectory traj3 = drive.trajectoryBuilder(new Pose2d(traj1.end().getX(), traj1.end().getY(), traj1.end().getHeading() + Math.PI)).back(d3).build();
+        pipeline = new Pipeline(0.0508, fx, fy, cx, cy, Pipeline.Team.Red);
         robot.initializeOpenCVPipeline(true, pipeline);
         waitForStart();
-        while (!isStopRequested() && opModeIsActive()) {
-            switch (pipeline.spikePos) {
-                case Left:
-                    break;
-                case Right:
-                    break;
-                case Center:
-                    break;
-                default:
-                    break;
-            }
+        while (pipeline.spikePos == null) {
+            sleep(20);
         }
+        robot.followRRTrajectory(traj1);
+        switch (pipeline.spikePos) {
+            case Left:
+                drive.turn(-Math.PI / 2);
+                telemetry.log().add("Left");
+                break;
+            case Right:
+                drive.turn(Math.PI / 2);
+                telemetry.log().add("Right");
+                break;
+            case Center:
+                drive.turn(Math.PI);
+                telemetry.log().add("Center");
+                break;
+            default:
+                break;
+        }
+        spinnerServo.setPower(1);
+        intakeMotor.setPower(outtakePower);
+        sleep(2000);
     }
 
     private void scanApril() {
@@ -102,15 +152,13 @@ public class Auto extends LinearOpMode {
 
             switch (state) {
                 case waiting:
-                    Optional<AprilTagDetection> optionalDetection = detections.stream().filter(x->x.id == 2).findFirst();
+                    Optional<AprilTagDetection> optionalDetection = detections.stream().filter(x -> x.id == 2).findFirst();
                     if (optionalDetection.isPresent()) {
                         AprilTagDetection detection = optionalDetection.get();
                         if (detection.pose.x < 0) {
-                            robot.followRRTrajectory(robot.getInternalRR().trajectoryBuilder(robot.getRRPoseEstimate())
-                                    .strafeRight(-detection.pose.x * FEET_PER_METER * 12));
+                            robot.followRRTrajectory(robot.getInternalRR().trajectoryBuilder(robot.getRRPoseEstimate()).strafeRight(-detection.pose.x * FEET_PER_METER * 12));
                         } else {
-                            robot.followRRTrajectory(robot.getInternalRR().trajectoryBuilder(robot.getRRPoseEstimate())
-                                    .strafeLeft(detection.pose.x * FEET_PER_METER * 12));
+                            robot.followRRTrajectory(robot.getInternalRR().trajectoryBuilder(robot.getRRPoseEstimate()).strafeLeft(detection.pose.x * FEET_PER_METER * 12));
                         }
                         state = State.centered;
                     }
@@ -120,6 +168,10 @@ public class Auto extends LinearOpMode {
         }
 
         sleep(20);
+    }
+
+    private int currentSlidePos() {
+        return (leftSlide.getCurrentPosition() + rightSlide.getCurrentPosition()) / 2;
     }
 
     enum State {

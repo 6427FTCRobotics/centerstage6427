@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
+import static org.firstinspires.ftc.teamcode.teamcode.Shared.*;
+
 import android.annotation.SuppressLint;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -23,44 +25,32 @@ import org.firstinspires.ftc.teamcode.internal.OptimizedRobot;
 @Config
 @SuppressLint("DefaultLocale")
 public final class TeleOP extends LinearOpMode {
-    public static double intakeFlipperPos = 0.5;
-    public static double outtakeIntakePos = 0.25;
-    public static double outtakeOuttakePos = 0.2;
-
-    // Start at lowestOuttake once known
-    private int liftPos = 0;
-    public static int fullIntakeThreshold = 300;
-    public static double fullIntakePos = 0.4;
-    public static double outtakeFlipperPos = 0;
-
     public static int liftSpeed = 40;
-
-    public static int lowestOuttake = 2000;
-
+    private int liftPos = 2000;
     OptimizedRobot robot;
     Servo flipperLeft, flipperRight, outtakeServo;
     CRServo spinnerServo;
-    DcMotor leftSlide, rightSlide, intakeMotor;
+    DcMotor leftSlide, rightSlide;
 
     public void runOpMode() throws InterruptedException {
         robot = new OptimizedRobot(new OptimizedController(gamepad1), new OptimizedController(gamepad2), telemetry, hardwareMap, new CenterStageControllerMapping());
         // Cursed but will start the robot in the flipped state
-        robot.synchronousDelayGateOPEN("flipping", getRuntime(), 1);
+        robot.synchronousDelayGateFINISH("flipping");
+
         robot.initializeRoadRunner();
         robot.getInternalRR().setPoseEstimate(new Pose2d(0, 0));
 
         flipperLeft = robot.getServo("flipperLeft");
         flipperRight = robot.getServo("flipperRight");
         outtakeServo = robot.getServo("outtakeServo");
-        flipperLeft.setPosition(fullIntakePos);
-        flipperRight.setPosition(1 - fullIntakePos);
+        flipperLeft.setPosition(intakeFlipperPos);
+        flipperRight.setPosition(1 - intakeFlipperPos);
         outtakeServo.setPosition(outtakeIntakePos);
         leftSlide = robot.getMotor("leftSlide", RunMode.RUN_TO_POSITION, Direction.REVERSE);
-        leftSlide.setPower(1.0);
+        leftSlide.setPower(liftPower);
         rightSlide = robot.getMotor("rightSlide", RunMode.RUN_TO_POSITION);
-        rightSlide.setPower(1.0);
+        rightSlide.setPower(liftPower);
         spinnerServo = hardwareMap.crservo.get("spinnerServo");
-        intakeMotor = robot.getMotor("intakeMotor", Direction.REVERSE);
         waitForStart();
 
         while (!isStopRequested() && opModeIsActive()) {
@@ -74,17 +64,16 @@ public final class TeleOP extends LinearOpMode {
     private void handleIntake() {
         double intakeSpeed = -robot.getControlFloat("intake");
         spinnerServo.setPower(intakeSpeed);
-        intakeMotor.setPower(intakeSpeed);
     }
 
     private void handleAngles() {
         if (robot.getControl("toggleOuttake")) {
             robot.synchronousDelayGateCLOSE("flipping");
         } else if (flipperLeft.getPosition() == outtakeFlipperPos) {
-            robot.synchronousDelayGateOPEN("flipping", getRuntime(), 1);
+            robot.synchronousDelayGateOPEN("flipping", getRuntime(), 1.5);
         }
-        boolean shouldUseOuttakePos = robot.getControl("toggleOuttake") && leftSlide.getCurrentPosition() >= lowestOuttake - 50;
-        double targetFlipperPos = shouldUseOuttakePos ? outtakeFlipperPos : liftPos < fullIntakeThreshold ? fullIntakePos : intakeFlipperPos;
+        boolean shouldUseOuttakePos = robot.getControl("toggleOuttake") && currentSlidePos() >= lowestOuttake - 50;
+        double targetFlipperPos = shouldUseOuttakePos ? outtakeFlipperPos : intakeFlipperPos;
         flipperLeft.setPosition(targetFlipperPos);
         flipperRight.setPosition(1 - targetFlipperPos);
         outtakeServo.setPosition(shouldUseOuttakePos ? outtakeOuttakePos : outtakeIntakePos);
@@ -92,8 +81,8 @@ public final class TeleOP extends LinearOpMode {
 
     private void handleLift() {
         if (robot.getControl("toggleOuttake")) {
-            liftPos = Math.min(lowestOuttake, liftPos - (int) (robot.getControlFloat("liftControl") * liftSpeed));
-        } else if (robot.synchronousDelayGateOPEN("flipping", getRuntime(), 1)) {
+            liftPos = Math.max(lowestOuttake, liftPos - (int) (robot.getControlFloat("liftControl") * liftSpeed));
+        } else if (robot.synchronousDelayGateOPEN("flipping", getRuntime(), 1.5)) {
             liftPos = robot.getControl("fullDown") ? 0 : 100;
         } else {
             liftPos = lowestOuttake;
@@ -114,5 +103,9 @@ public final class TeleOP extends LinearOpMode {
         telemetry.addData("heading", robot.getRRPoseEstimate().getHeading());
         telemetry.addData("liftPos", liftPos);
         telemetry.update();
+    }
+
+    private int currentSlidePos() {
+        return (leftSlide.getCurrentPosition() + rightSlide.getCurrentPosition()) / 2;
     }
 }
