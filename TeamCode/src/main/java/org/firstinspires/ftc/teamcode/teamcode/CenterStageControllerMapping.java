@@ -17,6 +17,9 @@ public class CenterStageControllerMapping implements ControllerMapping {
         mapping.put("fullDown", new ControlInput(OptimizedController.Key.B, Controller.CONTROLLER2, Type.TOGGLE));
         mapping.put("slow", new ControlInput(OptimizedController.Key.RIGHT_BUMPER, Controller.CONTROLLER1, Type.BOOL));
 
+        mapping.put("hangPart1", new ControlInput(OptimizedController.Key.RIGHT_BUMPER, Controller.CONTROLLER2, Type.BOOL));
+        mapping.put("hangPart2", new ControlInput(OptimizedController.Key.LEFT_BUMPER, Controller.CONTROLLER2, Type.BOOL));
+
         return mapping;
     }
 }

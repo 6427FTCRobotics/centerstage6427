@@ -29,8 +29,13 @@ import java.util.ArrayList;
 
 @Config
 public class Pipeline extends OptimizedOpenCVPipeline {
+    public static int THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION = 4;
+    public static float DECIMATION_HIGH = 3;
+    public static float DECIMATION_LOW = 2;
+    public static float THRESHOLD_HIGH_DECIMATION_RANGE_METERS = 1.0f;
+    int numFramesWithoutDetection = 0;
     private long nativeApriltagPtr;
-    private Mat grey = new Mat();
+    private final Mat grey = new Mat();
     private ArrayList<AprilTagDetection> detections = new ArrayList<>();
 
     private ArrayList<AprilTagDetection> detectionsUpdate = new ArrayList<>();
@@ -43,15 +48,15 @@ public class Pipeline extends OptimizedOpenCVPipeline {
     Scalar green = new Scalar(0, 255, 0, 255);
     Scalar white = new Scalar(255, 255, 255, 255);
 
-    double fx;
-    double fy;
-    double cx;
-    double cy;
+    public static double fx = 578.272;
+    public static double fy = 578.272;
+    public static double cx = 402.145;
+    public static double cy = 221.506;
 
     // UNITS ARE METERS
-    double tagsize;
-    double tagsizeX;
-    double tagsizeY;
+    public static double tagsize = 0.0508;
+    public static double tagsizeX = tagsize;
+    public static double tagsizeY = tagsize;
 
     private float decimation;
     private boolean needToSetDecimation;
@@ -60,16 +65,17 @@ public class Pipeline extends OptimizedOpenCVPipeline {
     private final AtomicReference<Bitmap> lastFrame = new AtomicReference<>(Bitmap.createBitmap(800, 448, Bitmap.Config.RGB_565));
 
     private Mode mode = Mode.Spike;
-    private Team team;
+    private final Team team;
 
-    public static int spikeSize = 5;
+    public static int spikeSize = 25;
 
-    public static int leftSpikeTopLeftX = 225;
-    public static int leftSpikeTopLeftY = 375;
-    public static int centerSpikeTopLeftX = 500;
-    public static int centerSpikeTopLeftY = 375;
-    public static int rightSpikeTopLeftX = 750;
-    public static int rightSpikeTopLeftY = 375;
+    public static int leftSpikeTopLeftX = 90;
+    public static int leftSpikeTopLeftY = 315;
+    public static int centerSpikeTopLeftX = 315;
+    public static int centerSpikeTopLeftY = 315;
+    public static int rightSpikeTopLeftX = 590;
+    public static int rightSpikeTopLeftY = 315;
+    public static int redOffset = 115;
 
     public SpikePos spikePos = null;
 
@@ -79,20 +85,14 @@ public class Pipeline extends OptimizedOpenCVPipeline {
 
     @Override
     public void init(Mat mat) {
-        leftSubmat = mat.submat(leftSpikeTopLeftY, leftSpikeTopLeftY + spikeSize, leftSpikeTopLeftX, leftSpikeTopLeftX + spikeSize);
-        centerSubmat = mat.submat(centerSpikeTopLeftY, centerSpikeTopLeftY + spikeSize, centerSpikeTopLeftX, centerSpikeTopLeftX + spikeSize);
-        rightSubmat = mat.submat(rightSpikeTopLeftY, rightSpikeTopLeftY + spikeSize, rightSpikeTopLeftX, rightSpikeTopLeftX + spikeSize);
+        int xOffset = team == Team.Red ? redOffset : 0;
+        leftSubmat = mat.submat(leftSpikeTopLeftY, leftSpikeTopLeftY + spikeSize, leftSpikeTopLeftX + xOffset, leftSpikeTopLeftX + xOffset + spikeSize);
+        centerSubmat = mat.submat(centerSpikeTopLeftY, centerSpikeTopLeftY + spikeSize, centerSpikeTopLeftX + xOffset, centerSpikeTopLeftX + xOffset + spikeSize);
+        rightSubmat = mat.submat(rightSpikeTopLeftY, rightSpikeTopLeftY + spikeSize, rightSpikeTopLeftX + xOffset, rightSpikeTopLeftX + xOffset + spikeSize);
         lastFrame.set(Bitmap.createBitmap(mat.width(), mat.height(), Bitmap.Config.RGB_565));
     }
 
-    public Pipeline(double tagsize, double fx, double fy, double cx, double cy, Team team) {
-        this.tagsize = tagsize;
-        this.tagsizeX = tagsize;
-        this.tagsizeY = tagsize;
-        this.fx = fx;
-        this.fy = fy;
-        this.cx = cx;
-        this.cy = cy;
+    public Pipeline(Team team) {
         this.team = team;
 
         constructMatrix();
@@ -102,7 +102,7 @@ public class Pipeline extends OptimizedOpenCVPipeline {
     }
 
     @Override
-    public void finalize() {
+    protected void finalize() {
         // Might be null if createApriltagDetector() threw an exception
         if (nativeApriltagPtr != 0) {
             // Delete the native context we created in the constructor
@@ -123,6 +123,9 @@ public class Pipeline extends OptimizedOpenCVPipeline {
             case Spike:
                 output = processSpike(input);
                 break;
+            case Idle:
+                output = input;
+                break;
             default:
                 throw new IllegalStateException("Unexpected value: " + mode);
         }
@@ -133,37 +136,49 @@ public class Pipeline extends OptimizedOpenCVPipeline {
     }
 
     private Mat processSpike(Mat input) {
+        int xOffset = team == Team.Red ? redOffset : 0;
         Scalar leftColor = Core.mean(leftSubmat);
         Scalar centerColor = Core.mean(centerSubmat);
         Scalar rightColor = Core.mean(rightSubmat);
         Imgproc.rectangle(
                 input,
-                new Point(leftSpikeTopLeftX, leftSpikeTopLeftY),
-                new Point(leftSpikeTopLeftX + spikeSize, leftSpikeTopLeftY + spikeSize),
+                new Point(leftSpikeTopLeftX + xOffset, leftSpikeTopLeftY),
+                new Point(leftSpikeTopLeftX + xOffset + spikeSize, leftSpikeTopLeftY + spikeSize),
                 new Scalar(0, 0, 0),
                 2
         );
         Imgproc.rectangle(
                 input,
-                new Point(centerSpikeTopLeftX, centerSpikeTopLeftY),
-                new Point(centerSpikeTopLeftX + spikeSize, centerSpikeTopLeftY + spikeSize),
+                new Point(centerSpikeTopLeftX + xOffset, centerSpikeTopLeftY),
+                new Point(centerSpikeTopLeftX + xOffset + spikeSize, centerSpikeTopLeftY + spikeSize),
                 new Scalar(0, 0, 0),
                 2
         );
         Imgproc.rectangle(
                 input,
-                new Point(rightSpikeTopLeftX, rightSpikeTopLeftY),
-                new Point(rightSpikeTopLeftX + spikeSize, rightSpikeTopLeftY + spikeSize),
+                new Point(rightSpikeTopLeftX + xOffset, rightSpikeTopLeftY),
+                new Point(rightSpikeTopLeftX + xOffset + spikeSize, rightSpikeTopLeftY + spikeSize),
                 new Scalar(0, 0, 0),
                 2
         );
-        if (leftColor.val[team.colorOffset] > centerColor.val[team.colorOffset] && leftColor.val[team.colorOffset] > rightColor.val[team.colorOffset]) {
-            spikePos = SpikePos.Left;
-        } else if (centerColor.val[team.colorOffset] > rightColor.val[team.colorOffset]) {
+        // Lowest difference will be both wrong
+        double leftCenter = Math.abs(leftColor.val[team.colorOffset] - centerColor.val[team.colorOffset]);
+        double leftRight = Math.abs(leftColor.val[team.colorOffset] - rightColor.val[team.colorOffset]);
+        double rightCenter = Math.abs(rightColor.val[team.colorOffset] - centerColor.val[team.colorOffset]);
+        if (leftCenter < leftRight && leftCenter < rightCenter) {
+            spikePos = SpikePos.Right;
+        } else if (leftRight < rightCenter) {
             spikePos = SpikePos.Center;
         } else {
-            spikePos = SpikePos.Right;
+            spikePos = SpikePos.Left;
         }
+//        if (leftColor.val[team.colorOffset] > centerColor.val[team.colorOffset] && leftColor.val[team.colorOffset] > rightColor.val[team.colorOffset]) {
+//            spikePos = SpikePos.Left;
+//        } else if (centerColor.val[team.colorOffset] > rightColor.val[team.colorOffset]) {
+//            spikePos = SpikePos.Center;
+//        } else {
+//            spikePos = SpikePos.Right;
+//        }
         return input;
     }
 
@@ -189,7 +204,7 @@ public class Pipeline extends OptimizedOpenCVPipeline {
         for (AprilTagDetection detection : detections) {
             Pose pose = aprilTagPoseToOpenCvPose(detection.pose);
             //Pose pose = poseFromTrapezoid(detection.corners, cameraMatrix, tagsizeX, tagsizeY);
-            drawAxisMarker(input, tagsizeY / 2.0, 6, pose.rvec, pose.tvec, cameraMatrix);
+            drawAxisMarker(input, tagsizeY / 2.0, pose.rvec, pose.tvec, cameraMatrix);
             draw3dCubeMarker(input, tagsizeX, tagsizeX, tagsizeY, 5, pose.rvec, pose.tvec, cameraMatrix);
         }
         return input;
@@ -210,6 +225,24 @@ public class Pipeline extends OptimizedOpenCVPipeline {
         synchronized (detectionsUpdateSync) {
             ArrayList<AprilTagDetection> ret = detectionsUpdate;
             detectionsUpdate = null;
+            if (ret != null) {
+                if (ret.isEmpty()) {
+                    numFramesWithoutDetection++;
+
+                    // If we haven't seen a tag for a few frames, lower the decimation
+                    // so we can hopefully pick one up if we're e.g. far back
+                    if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION) {
+                        setDecimation(DECIMATION_LOW);
+                    }
+                } else {
+                    numFramesWithoutDetection = 0;
+                    // If the target is within 1 meter, turn on high decimation to
+                    // increase the frame rate
+                    if (detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) {
+                        setDecimation(DECIMATION_HIGH);
+                    }
+                }
+            }
             return ret;
         }
     }
@@ -248,7 +281,7 @@ public class Pipeline extends OptimizedOpenCVPipeline {
      * @param tvec         the translation vector of the detection
      * @param cameraMatrix the camera matrix used when finding the detection
      */
-    void drawAxisMarker(Mat buf, double length, int thickness, Mat rvec, Mat tvec, Mat cameraMatrix) {
+    void drawAxisMarker(Mat buf, double length, Mat rvec, Mat tvec, Mat cameraMatrix) {
         // The points in 3D space we wish to project onto the 2D image plane.
         // The origin of the coordinate space is assumed to be in the center of the detection.
         MatOfPoint3f axis = new MatOfPoint3f(
@@ -264,11 +297,11 @@ public class Pipeline extends OptimizedOpenCVPipeline {
         Point[] projectedPoints = matProjectedPoints.toArray();
 
         // Draw the marker!
-        Imgproc.line(buf, projectedPoints[0], projectedPoints[1], red, thickness);
-        Imgproc.line(buf, projectedPoints[0], projectedPoints[2], green, thickness);
-        Imgproc.line(buf, projectedPoints[0], projectedPoints[3], blue, thickness);
+        Imgproc.line(buf, projectedPoints[0], projectedPoints[1], red, 6);
+        Imgproc.line(buf, projectedPoints[0], projectedPoints[2], green, 6);
+        Imgproc.line(buf, projectedPoints[0], projectedPoints[3], blue, 6);
 
-        Imgproc.circle(buf, projectedPoints[0], thickness, white, -1);
+        Imgproc.circle(buf, projectedPoints[0], 6, white, -1);
     }
 
     void draw3dCubeMarker(Mat buf, double length, double tagWidth, double tagHeight, int thickness, Mat rvec, Mat tvec, Mat cameraMatrix) {
@@ -367,7 +400,7 @@ public class Pipeline extends OptimizedOpenCVPipeline {
      * A simple container to hold both rotation and translation
      * vectors, which together form a 6DOF pose.
      */
-    class Pose {
+    static class Pose {
         Mat rvec;
         Mat tvec;
 
@@ -383,7 +416,7 @@ public class Pipeline extends OptimizedOpenCVPipeline {
     }
 
     public enum Mode {
-        Spike, April
+        Spike, Idle, April
     }
 
     public enum Team {
@@ -396,10 +429,26 @@ public class Pipeline extends OptimizedOpenCVPipeline {
     }
 
     public enum SpikePos {
-        Left, Right, Center
+        Left, Right, Center;
+
+        public int targetTag() {
+            switch (this) {
+                case Left:
+                    return 1;
+                case Center:
+                    return 2;
+                case Right:
+                    return 3;
+            }
+            return 0;
+        }
     }
 
     public void finishSpike() {
+        mode = Mode.Idle;
+    }
+
+    public void startApril() {
         mode = Mode.April;
     }
 }

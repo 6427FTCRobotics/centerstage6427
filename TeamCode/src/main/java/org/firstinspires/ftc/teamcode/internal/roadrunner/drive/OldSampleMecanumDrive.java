@@ -186,7 +186,7 @@ public class OldSampleMecanumDrive extends MecanumDrive {
         rightRear.setDirection(DriveConstants.motorDirections[3]);
 
         // TODO: if desired, use setLocalizer() to change the localization method
-        setLocalizer(new TwoWheelTrackingLocalizer(hardwareMap, this));
+//        setLocalizer(new TwoWheelTrackingLocalizer(hardwareMap, this));
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {

@@ -214,8 +214,6 @@ public class SampleMecanumDrive extends MecanumDrive {
             update();
     }
 
-    }}}}
-
     public boolean isBusy() {
         return trajectorySequenceRunner.isBusy();
     }

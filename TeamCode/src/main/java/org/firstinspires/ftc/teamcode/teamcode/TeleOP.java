@@ -25,7 +25,10 @@ import org.firstinspires.ftc.teamcode.internal.OptimizedRobot;
 @Config
 @SuppressLint("DefaultLocale")
 public final class TeleOP extends LinearOpMode {
+    public static int hangPos = 2000;
+    public static int fullDownPos = 300;
     public static int liftSpeed = 40;
+    public static int maxHeight = 2950;
     private int liftPos = 2000;
     OptimizedRobot robot;
     Servo flipperLeft, flipperRight, outtakeServo;
@@ -70,25 +73,30 @@ public final class TeleOP extends LinearOpMode {
         if (robot.getControl("toggleOuttake")) {
             robot.synchronousDelayGateCLOSE("flipping");
         } else if (flipperLeft.getPosition() == outtakeFlipperPos) {
-            robot.synchronousDelayGateOPEN("flipping", getRuntime(), 1.5);
+            robot.synchronousDelayGateOPEN("flipping", getRuntime(), flipDelayMS / 1000.0);
         }
         boolean shouldUseOuttakePos = robot.getControl("toggleOuttake") && currentSlidePos() >= lowestOuttake - 50;
         double targetFlipperPos = shouldUseOuttakePos ? outtakeFlipperPos : intakeFlipperPos;
         flipperLeft.setPosition(targetFlipperPos);
         flipperRight.setPosition(1 - targetFlipperPos);
-        outtakeServo.setPosition(shouldUseOuttakePos ? outtakeOuttakePos : outtakeIntakePos);
+        outtakeServo.setPosition(shouldUseOuttakePos ? outtakeOuttakePos : robot.getControl("fullDown") ? outtakeIntakePos : outtakeIntakePos - 0.1);
     }
 
     private void handleLift() {
-        if (robot.getControl("toggleOuttake")) {
-            liftPos = Math.max(lowestOuttake, liftPos - (int) (robot.getControlFloat("liftControl") * liftSpeed));
-        } else if (robot.synchronousDelayGateOPEN("flipping", getRuntime(), 1.5)) {
-            liftPos = robot.getControl("fullDown") ? 0 : 100;
+        if (robot.getControl("hangPart1") && robot.getControl("hangPart2")) {
+            leftSlide.setTargetPosition(hangPos);
+            rightSlide.setTargetPosition(hangPos);
         } else {
-            liftPos = lowestOuttake;
+            if (robot.getControl("toggleOuttake")) {
+                liftPos = Math.min(Math.max(lowestOuttake + 150, liftPos - (int) (robot.getControlFloat("liftControl") * liftSpeed)), maxHeight);
+            } else if (robot.synchronousDelayGateOPEN("flipping", getRuntime(), flipDelayMS / 1000.0)) {
+                liftPos = robot.getControl("fullDown") ? 0 : fullDownPos;
+            } else {
+                liftPos = lowestOuttake + 150;
+            }
+            leftSlide.setTargetPosition(liftPos);
+            rightSlide.setTargetPosition(liftPos);
         }
-        leftSlide.setTargetPosition(liftPos);
-        rightSlide.setTargetPosition(liftPos);
     }
 
     private void handleMovement() {
