@@ -64,7 +64,7 @@ public class DriveConstants {
 
 
     // TODO: Change motor directions {FL, FR, BL, BR}
-    public static final DcMotorSimple.Direction[] motorDirections = {DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.FORWARD};
+    public static DcMotorSimple.Direction[] motorDirections = {DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.REVERSE, DcMotorSimple.Direction.FORWARD, DcMotorSimple.Direction.REVERSE};
 
     // TODO: If your hub is mounted vertically
     public static final boolean HUB_MOUNTED_VERTICAL = false;
@@ -104,7 +104,7 @@ public class DriveConstants {
     // kV             0.01                     0.017
     // kStatic        0.01                     0.05
     // kA             0.001          z          0.003
-    public static final double kV = 0.0178; // 0.016 also seems to work sometimes
+    public static final double kV = 0.019; // 0.016 also seems to work sometimes
     public static final double kA = 0.006;
     public static final double kStatic = 0.03;
 
@@ -123,10 +123,10 @@ public class DriveConstants {
      * small and gradually increase them later after everything is working. All distance units are
      * inches.
      */
-    public static final double MAX_VEL = 35;
-    public static final double MAX_ACCEL = 20;
-    public static final double MAX_ANG_VEL = 15;
-    public static final double MAX_ANG_ACCEL = Math.toRadians(35);
+    public static double MAX_VEL = 55 * 0.8;
+    public static double MAX_ACCEL = 20;
+    public static double MAX_ANG_VEL = 109 * 0.8;
+    public static double MAX_ANG_ACCEL = Math.toRadians(35);
 
 
     public static double encoderTicksToInches(double ticks) {

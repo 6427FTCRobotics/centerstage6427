@@ -10,7 +10,7 @@ public class SpikeTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         OptimizedRobot robot = new OptimizedRobot(telemetry, hardwareMap);
-        Pipeline pipeline = new Pipeline(Pipeline.Team.Blue);
+        Pipeline pipeline = new Pipeline(Pipeline.Team.Blue, Pipeline.Distance.Close);
         robot.initializeOpenCVPipeline(true, pipeline);
         waitForStart();
         while (pipeline.spikePos == null) {

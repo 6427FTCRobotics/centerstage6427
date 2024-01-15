@@ -16,9 +16,13 @@ public class CenterStageControllerMapping implements ControllerMapping {
         mapping.put("toggleOuttake", new ControlInput(OptimizedController.Key.A, Controller.CONTROLLER2, Type.TOGGLE));
         mapping.put("fullDown", new ControlInput(OptimizedController.Key.B, Controller.CONTROLLER2, Type.TOGGLE));
         mapping.put("slow", new ControlInput(OptimizedController.Key.RIGHT_BUMPER, Controller.CONTROLLER1, Type.BOOL));
+        mapping.put("armaanMode", new ControlInput(OptimizedController.Key.LEFT_BUMPER, Controller.CONTROLLER1, Type.TOGGLE));
+        mapping.put("resetHeading", new ControlInput(OptimizedController.Key.BACK, Controller.CONTROLLER1, Type.PRESS));
 
-        mapping.put("hangPart1", new ControlInput(OptimizedController.Key.RIGHT_BUMPER, Controller.CONTROLLER2, Type.BOOL));
-        mapping.put("hangPart2", new ControlInput(OptimizedController.Key.LEFT_BUMPER, Controller.CONTROLLER2, Type.BOOL));
+        mapping.put("hangPart1", new ControlInput(OptimizedController.Key.RIGHT_BUMPER, Controller.CONTROLLER2, Type.TOGGLE));
+        mapping.put("hangPart2", new ControlInput(OptimizedController.Key.LEFT_BUMPER, Controller.CONTROLLER2, Type.TOGGLE      `));
+
+        mapping.put("airplane", new ControlInput(OptimizedController.Key.DPAD_DOWN, Controller.CONTROLLER2, Type.TOGGLE));
 
         return mapping;
     }

@@ -2,23 +2,15 @@ package org.firstinspires.ftc.teamcode.teamcode;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.internal.OptimizedController;
 import org.firstinspires.ftc.teamcode.internal.OptimizedRobot;
 import org.firstinspires.ftc.teamcode.internal.roadrunner.drive.SampleMecanumDrive;
 import org.openftc.apriltag.AprilTagDetection;
-import org.tensorflow.lite.task.vision.detector.Detection;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -26,13 +18,14 @@ import java.util.Optional;
 import static org.firstinspires.ftc.teamcode.teamcode.Shared.*;
 
 @Config
-public abstract class Auto extends LinearOpMode  {
+public abstract class Auto extends LinearOpMode {
     OptimizedRobot robot;
     Servo flipperLeft, flipperRight, outtakeServo;
     DcMotor leftSlide, rightSlide;
     CRServo spinnerServo;
     Pipeline pipeline;
     Pose2d startPos = new Pose2d(0, 0);
+
     protected SampleMecanumDrive beforeStart() {
         robot = new OptimizedRobot(telemetry, hardwareMap);
         robot.initializeRoadRunner();
@@ -44,9 +37,8 @@ public abstract class Auto extends LinearOpMode  {
         flipperRight = robot.getServo("flipperRight");
 
         outtakeServo = robot.getServo("outtakeServo");
-        flipperLeft.setPosition(intakeFlipperPos);
-        flipperRight.setPosition(1 - intakeFlipperPos);
-        outtakeServo.setPosition(outtakeIntakePos);
+        moveFlippers(flipperStoragePos);
+        outtakeServo.setPosition(outtakeStoragePos);
 
         leftSlide = robot.getMotor("leftSlide", DcMotor.RunMode.RUN_TO_POSITION, DcMotorSimple.Direction.REVERSE);
         leftSlide.setPower(liftPower);
@@ -55,6 +47,11 @@ public abstract class Auto extends LinearOpMode  {
         rightSlide.setPower(liftPower);
         spinnerServo = hardwareMap.crservo.get("spinnerServo");
         return drive;
+    }
+
+    protected void moveFlippers(double pos) {
+        flipperLeft.setPosition(pos);
+        flipperRight.setPosition(1 - pos);
     }
 
     protected void waitForSpike() {
@@ -69,6 +66,7 @@ public abstract class Auto extends LinearOpMode  {
         sleep(outtakeMs);
         spinnerServo.setPower(0);
     }
+
     protected void outtakeLong() {
         spinnerServo.setPower(outtakePower);
         sleep(outtakeMs * 2L);
@@ -76,15 +74,15 @@ public abstract class Auto extends LinearOpMode  {
     }
 
     protected void flipOut() {
-        flipperLeft.setPosition(outtakeFlipperPos);
-        flipperRight.setPosition(1 - outtakeFlipperPos);
+        flipperLeft.setPosition(flipperOuttakePos);
+        flipperRight.setPosition(1 - flipperOuttakePos);
         outtakeServo.setPosition(outtakeOuttakePos);
         sleep(flipDelayMS);
     }
 
     protected void flipIn() {
-        flipperLeft.setPosition(intakeFlipperPos);
-        flipperRight.setPosition(1 - intakeFlipperPos);
+        flipperLeft.setPosition(flipperIntakePos);
+        flipperRight.setPosition(1 - flipperIntakePos);
         outtakeServo.setPosition(outtakeIntakePos);
         sleep(flipDelayMS);
     }

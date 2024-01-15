@@ -44,7 +44,7 @@ import static org.firstinspires.ftc.teamcode.internal.roadrunner.drive.DriveCons
 @Config
 @Autonomous(group = "drive")
 public class ManualFeedforwardTuner extends LinearOpMode {
-    public static double DISTANCE = 72; // in
+    public static double DISTANCE = 130; // in
 
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
 
@@ -81,6 +81,10 @@ public class ManualFeedforwardTuner extends LinearOpMode {
         telemetry.addLine("Ready!");
         telemetry.update();
         telemetry.clearAll();
+
+        telemetry.addData("targetVelocity", 0);
+        telemetry.addData("measuredVelocity", 0);
+        telemetry.addData("error", 0);
 
         waitForStart();
 

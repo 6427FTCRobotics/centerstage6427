@@ -9,15 +9,17 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 @Autonomous
 public class ManualMotor extends LinearOpMode {
     public static double power = 0;
-    public static String name = "hang";
+    public static String[] motors = {"frontLeftMotor", "frontRightMotor", "backLeftMotor", "backRightMotor"};
 
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotor motor = hardwareMap.dcMotor.get(name);
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         waitForStart();
         while (opModeIsActive() && !isStopRequested()) {
-            motor.setPower(power);
+            for (String name: motors) {
+                DcMotor motor = hardwareMap.dcMotor.get(name);
+                motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                motor.setPower(power);
+            }
         }
     }
 }

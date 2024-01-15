@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.internal.roadrunner.util.Encoder;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This class is a "repackaged" version
@@ -300,6 +301,20 @@ public class OptimizedRobot {
         }
 
         return false;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Experimental
+    public void setToggle(String controlName, boolean target) {
+        if (getControl(controlName) == target) {
+            return;
+        }
+        ControllerMapping.ControlInput input = controlMap.get(controlName);
+        if (input.controller == ControllerMapping.Controller.CONTROLLER2) {
+            controller2.setToggle(input.key, !controller2.getToggle(input.key));
+        } else {
+            controller1.setToggle(input.key, !controller1.getToggle(input.key));
+        }
     }
 
     /**

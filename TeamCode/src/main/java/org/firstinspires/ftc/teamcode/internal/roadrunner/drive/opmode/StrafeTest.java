@@ -20,15 +20,16 @@ public class StrafeTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Trajectory trajectory = drive.trajectoryBuilder(new Pose2d())
+        Trajectory right = drive.trajectoryBuilder(new Pose2d())
                 .strafeRight(DISTANCE)
+                .build();
+        Trajectory left = drive.trajectoryBuilder(right.end())
+                .strafeLeft(DISTANCE)
                 .build();
 
         waitForStart();
 
         if (isStopRequested()) return;
-
-        drive.followTrajectory(trajectory);
 
         Pose2d poseEstimate = drive.getPoseEstimate();
         telemetry.addData("finalX", poseEstimate.getX());
@@ -36,6 +37,9 @@ public class StrafeTest extends LinearOpMode {
         telemetry.addData("finalHeading", poseEstimate.getHeading());
         telemetry.update();
 
-        while (!isStopRequested() && opModeIsActive()) ;
+        while (!isStopRequested() && opModeIsActive()) {
+            drive.followTrajectory(right);
+            drive.followTrajectory(left);
+        }
     }
 }

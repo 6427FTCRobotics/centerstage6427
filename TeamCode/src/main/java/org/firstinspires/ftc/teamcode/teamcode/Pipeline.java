@@ -66,15 +66,16 @@ public class Pipeline extends OptimizedOpenCVPipeline {
 
     private Mode mode = Mode.Spike;
     private final Team team;
+    private final Distance distance;
 
     public static int spikeSize = 25;
 
     public static int leftSpikeTopLeftX = 90;
-    public static int leftSpikeTopLeftY = 315;
+    public static int leftSpikeTopLeftY = 200;
     public static int centerSpikeTopLeftX = 315;
-    public static int centerSpikeTopLeftY = 315;
+    public static int centerSpikeTopLeftY = 200;
     public static int rightSpikeTopLeftX = 590;
-    public static int rightSpikeTopLeftY = 315;
+    public static int rightSpikeTopLeftY = 200;
     public static int redOffset = 115;
 
     public SpikePos spikePos = null;
@@ -85,15 +86,16 @@ public class Pipeline extends OptimizedOpenCVPipeline {
 
     @Override
     public void init(Mat mat) {
-        int xOffset = team == Team.Red ? redOffset : 0;
+        int xOffset = team == Team.Red ^ distance == Distance.Far ? redOffset : 0;
         leftSubmat = mat.submat(leftSpikeTopLeftY, leftSpikeTopLeftY + spikeSize, leftSpikeTopLeftX + xOffset, leftSpikeTopLeftX + xOffset + spikeSize);
         centerSubmat = mat.submat(centerSpikeTopLeftY, centerSpikeTopLeftY + spikeSize, centerSpikeTopLeftX + xOffset, centerSpikeTopLeftX + xOffset + spikeSize);
         rightSubmat = mat.submat(rightSpikeTopLeftY, rightSpikeTopLeftY + spikeSize, rightSpikeTopLeftX + xOffset, rightSpikeTopLeftX + xOffset + spikeSize);
         lastFrame.set(Bitmap.createBitmap(mat.width(), mat.height(), Bitmap.Config.RGB_565));
     }
 
-    public Pipeline(Team team) {
+    public Pipeline(Team team, Distance distance) {
         this.team = team;
+        this.distance = distance;
 
         constructMatrix();
 
@@ -136,7 +138,7 @@ public class Pipeline extends OptimizedOpenCVPipeline {
     }
 
     private Mat processSpike(Mat input) {
-        int xOffset = team == Team.Red ? redOffset : 0;
+        int xOffset = team == Team.Red ^ distance == Distance.Far ? redOffset : 0;
         Scalar leftColor = Core.mean(leftSubmat);
         Scalar centerColor = Core.mean(centerSubmat);
         Scalar rightColor = Core.mean(rightSubmat);
@@ -161,24 +163,18 @@ public class Pipeline extends OptimizedOpenCVPipeline {
                 new Scalar(0, 0, 0),
                 2
         );
-        // Lowest difference will be both wrong
-        double leftCenter = Math.abs(leftColor.val[team.colorOffset] - centerColor.val[team.colorOffset]);
-        double leftRight = Math.abs(leftColor.val[team.colorOffset] - rightColor.val[team.colorOffset]);
-        double rightCenter = Math.abs(rightColor.val[team.colorOffset] - centerColor.val[team.colorOffset]);
-        if (leftCenter < leftRight && leftCenter < rightCenter) {
-            spikePos = SpikePos.Right;
-        } else if (leftRight < rightCenter) {
-            spikePos = SpikePos.Center;
-        } else {
+        // magic color shit
+        // find the one that is most right and least wrong
+        double leftTarget = leftColor.val[team.colorOffset] - leftColor.val[(team.colorOffset + 1) % 3] - leftColor.val[(team.colorOffset + 2) % 3];
+        double rightTarget = rightColor.val[team.colorOffset] - rightColor.val[(team.colorOffset + 1) % 3] - rightColor.val[(team.colorOffset + 2) % 3];
+        double centerTarget =  centerColor.val[team.colorOffset] - centerColor.val[(team.colorOffset + 1) % 3] - centerColor.val[(team.colorOffset + 2) % 3];
+        if (leftTarget > rightTarget && leftTarget > centerTarget) {
             spikePos = SpikePos.Left;
+        } else if (rightTarget > centerTarget) {
+            spikePos = SpikePos.Right;
+        } else {
+            spikePos = SpikePos.Center;
         }
-//        if (leftColor.val[team.colorOffset] > centerColor.val[team.colorOffset] && leftColor.val[team.colorOffset] > rightColor.val[team.colorOffset]) {
-//            spikePos = SpikePos.Left;
-//        } else if (centerColor.val[team.colorOffset] > rightColor.val[team.colorOffset]) {
-//            spikePos = SpikePos.Center;
-//        } else {
-//            spikePos = SpikePos.Right;
-//        }
         return input;
     }
 
@@ -419,6 +415,10 @@ public class Pipeline extends OptimizedOpenCVPipeline {
         Spike, Idle, April
     }
 
+    public enum Distance {
+        Close, Far
+    }
+
     public enum Team {
         Red(0), Blue(2);
         public final int colorOffset;
@@ -435,9 +435,9 @@ public class Pipeline extends OptimizedOpenCVPipeline {
             switch (this) {
                 case Left:
                     return 1;
-                case Center:
-                    return 2;
                 case Right:
+                    return 2;
+                case Center:
                     return 3;
             }
             return 0;

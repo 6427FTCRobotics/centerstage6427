@@ -1,91 +1,109 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
 import static org.firstinspires.ftc.teamcode.teamcode.Shared.FEET_PER_METER;
-import static org.firstinspires.ftc.teamcode.teamcode.Shared.flipDelayMS;
-import static org.firstinspires.ftc.teamcode.teamcode.Shared.intakeFlipperPos;
-import static org.firstinspires.ftc.teamcode.teamcode.Shared.liftPower;
 import static org.firstinspires.ftc.teamcode.teamcode.Shared.lowestOuttake;
-import static org.firstinspires.ftc.teamcode.teamcode.Shared.outtakeFlipperPos;
-import static org.firstinspires.ftc.teamcode.teamcode.Shared.outtakeIntakePos;
-import static org.firstinspires.ftc.teamcode.teamcode.Shared.outtakeOuttakePos;
 import static org.firstinspires.ftc.teamcode.teamcode.Shared.targetX;
 import static org.firstinspires.ftc.teamcode.teamcode.Shared.targetZ;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.internal.OptimizedRobot;
 import org.firstinspires.ftc.teamcode.internal.roadrunner.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.internal.roadrunner.trajectorysequence.TrajectorySequence;
 import org.openftc.apriltag.AprilTagDetection;
-import static org.firstinspires.ftc.teamcode.teamcode.Shared.*;
 
-import java.util.ArrayList;
-import java.util.Optional;
+import static org.firstinspires.ftc.teamcode.teamcode.Shared.*;
 
 @Autonomous
 @Config
 public class RedAuto extends Auto {
-    public static double outtakePower = 0.25;
-    public static double strafeForRightTape = 14.5;
-    public static double backwardForSideTape = 18;
-    public static double backwardForMidTape = 36;
-    public static double strafeForMidTape = 20;
     public static double strafeForLeftTape = 8.5;
-    public static double backwardForBoardVision = 24;
-    public static double strafeForBoardVision = 24;
+    public static double backwardForLeftTape = 19.5;
+
+    public static double strafeForRightTape = 12;
+    public static double backwardForRightTape = 15;
+
+    public static double strafeForMidTape = 20;
+
+    public static double backwardForMidTape = 36.5;
+    public static double backwardForHide = 5.5;
+    public static double backwardForLeftBoard = 29.5;
+    public static double backwardForMidBoard = 23.5;
+    public static double backwardForRightBoard = 17.5;
+    public static double strafeForBoardVision = 45;
 
     @Override
     public void runOpMode() throws InterruptedException {
-       SampleMecanumDrive drive = beforeStart();
+        endPos = new Pose2d(0, 0, -Math.PI / 2);
+        SampleMecanumDrive drive = beforeStart();
 
         TrajectorySequence startToRightTape = drive.trajectorySequenceBuilder(startPos)
-                .lineToLinearHeading(new Pose2d(-backwardForSideTape, strafeForRightTape, Math.PI))
-                .build();
-        TrajectorySequence rightTapeToLeftTape = drive.trajectorySequenceBuilder(startToRightTape.end())
-                .lineToLinearHeading(new Pose2d(-backwardForSideTape, -strafeForLeftTape, Math.PI))
+                .lineToLinearHeading(new Pose2d(-backwardForRightTape, strafeForRightTape, Math.PI))
                 .build();
         TrajectorySequence rightTapeToBoard = drive.trajectorySequenceBuilder(startToRightTape.end())
                 .back(fleeDist)
-                .lineToLinearHeading(new Pose2d(-backwardForBoardVision, strafeForBoardVision, -Math.PI / 2))
+                .lineToLinearHeading(new Pose2d(-backwardForRightBoard, strafeForBoardVision, -Math.PI / 2))
                 .build();
-        TrajectorySequence leftTapeToBoard = drive.trajectorySequenceBuilder(rightTapeToLeftTape.end())
-                .lineToLinearHeading(new Pose2d(-backwardForBoardVision, strafeForBoardVision, -Math.PI / 2))
+        TrajectorySequence rightBack = drive.trajectorySequenceBuilder(rightTapeToBoard.end())
+                .lineToLinearHeading(new Pose2d(-backwardForHide, strafeForBoardVision - 15, -Math.PI / 2))
                 .build();
+        TrajectorySequence rightForward = drive.trajectorySequenceBuilder(rightBack.end())
+                .lineToLinearHeading(new Pose2d(-backwardForHide, strafeForBoardVision, -Math.PI / 2))
+                .build();
+
+        TrajectorySequence startToLeftTape = drive.trajectorySequenceBuilder(startPos)
+                .lineToLinearHeading(new Pose2d(-backwardForLeftTape, strafeForRightTape, Math.PI))
+                .lineToLinearHeading(new Pose2d(-backwardForLeftTape, -strafeForLeftTape, Math.PI))
+                .build();
+        TrajectorySequence leftTapeToBoard = drive.trajectorySequenceBuilder(startToLeftTape.end())
+                .lineToLinearHeading(new Pose2d(-backwardForLeftBoard, strafeForBoardVision, -Math.PI / 2))
+                .build();
+        TrajectorySequence leftBack = drive.trajectorySequenceBuilder(leftTapeToBoard.end())
+                .lineToLinearHeading(new Pose2d(-backwardForHide, strafeForBoardVision - 15, -Math.PI / 2))
+                .build();
+        TrajectorySequence leftForward = drive.trajectorySequenceBuilder(leftBack.end())
+                .lineToLinearHeading(new Pose2d(-backwardForHide, strafeForBoardVision, -Math.PI / 2))
+                .build();
+
         TrajectorySequence startToMidTape = drive.trajectorySequenceBuilder(startPos)
                 .lineToLinearHeading(new Pose2d(-backwardForMidTape, strafeForMidTape, -Math.PI / 2))
                 .build();
         TrajectorySequence midTapeToBoard = drive.trajectorySequenceBuilder(startToMidTape.end())
-                .lineToLinearHeading(new Pose2d(-backwardForBoardVision, strafeForBoardVision, -Math.PI / 2))
+                .back(fleeDist)
+                .lineToLinearHeading(new Pose2d(-backwardForMidBoard, strafeForBoardVision, -Math.PI / 2))
+                .build();
+        TrajectorySequence midBack = drive.trajectorySequenceBuilder(midTapeToBoard.end())
+                .lineToLinearHeading(new Pose2d(-backwardForHide, strafeForBoardVision - 15, -Math.PI / 2))
+                .build();
+        TrajectorySequence midForward = drive.trajectorySequenceBuilder(midBack.end())
+                .lineToLinearHeading(new Pose2d(-backwardForHide, strafeForBoardVision, -Math.PI / 2))
                 .build();
 
-        pipeline = new Pipeline(Pipeline.Team.Red);
+        pipeline = new Pipeline(Pipeline.Team.Red, Pipeline.Distance.Close);
         robot.initializeOpenCVPipeline(true, pipeline);
         waitForStart();
         waitForSpike();
         switch (pipeline.spikePos) {
             case Left:
-                drive.followTrajectorySequence(startToRightTape);
-                drive.followTrajectorySequence(rightTapeToLeftTape);
-                break;
-            case Center:
-                drive.followTrajectorySequence(startToMidTape);
+                drive.followTrajectorySequence(startToLeftTape);
                 break;
             case Right:
                 drive.followTrajectorySequence(startToRightTape);
                 break;
+            case Center:
+                drive.followTrajectorySequence(startToMidTape);
+                break;
         }
+        moveFlippers(flipperIntakePos);
+        outtakeServo.setPosition(outtakeIntakePos);
         outtake();
+        moveFlippers(flipperStoragePos);
+        outtakeServo.setPosition(outtakeStoragePos);
         switch (pipeline.spikePos) {
             case Left:
                 drive.followTrajectorySequence(leftTapeToBoard);
@@ -97,24 +115,34 @@ public class RedAuto extends Auto {
                 drive.followTrajectorySequence(rightTapeToBoard);
                 break;
         }
-        pipeline.startApril();
-        AprilTagDetection detection = getApril(7 - pipeline.spikePos.targetTag());
-        Pose2d currentPos = drive.getPoseEstimate();
-        Orientation rot = Orientation.getOrientation(detection.pose.R, AxesReference.INTRINSIC, AxesOrder.YXZ,
-                AngleUnit.DEGREES);
-        drive.followTrajectorySequence(drive.trajectorySequenceBuilder(currentPos)
-                .lineToLinearHeading(
-                        new Pose2d(
-                                currentPos.getX() - detection.pose.x * FEET_PER_METER * 12 + targetX,
-                                currentPos.getY() + detection.pose.z * FEET_PER_METER * 12 - targetZ,
-                                currentPos.getHeading() - Math.toRadians(rot.firstAngle)))
-                .build());
         moveSlides(lowestOuttake);
         flipOut();
         outtakeLong();
-        drive.followTrajectorySequence(drive.trajectorySequenceBuilder(drive.getPoseEstimate()).forward(15).build());
-        flipIn();
-        moveSlides(500);
-        drive.followTrajectorySequence(drive.trajectorySequenceBuilder(drive.getPoseEstimate()).back(15).build());
+        switch (pipeline.spikePos) {
+            case Left:
+                drive.followTrajectorySequence(leftBack);
+                break;
+            case Center:
+                drive.followTrajectorySequence(midBack);
+                break;
+            case Right:
+                drive.followTrajectorySequence(rightBack);
+                break;
+        }
+        moveFlippers(flipperIntakePos);
+        outtakeServo.setPosition(outtakeIntakePos);
+        sleep(flipDelayMS);
+        moveSlides(100);
+        switch (pipeline.spikePos) {
+            case Left:
+                drive.followTrajectorySequence(leftForward);
+                break;
+            case Center:
+                drive.followTrajectorySequence(midForward);
+                break;
+            case Right:
+                drive.followTrajectorySequence(rightForward);
+                break;
+        }
     }
 }
