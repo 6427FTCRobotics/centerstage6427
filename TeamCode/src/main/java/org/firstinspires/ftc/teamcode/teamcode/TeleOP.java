@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode;
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
@@ -33,7 +34,7 @@ public final class TeleOP extends LinearOpMode {
     OptimizedRobot robot;
     Servo flipperLeft, flipperRight, outtakeServo;
     CRServo spinnerServo;
-    DcMotor leftSlide, rightSlide, airplane;
+    DcMotorEx leftSlide, rightSlide, airplane;
 
     public void runOpMode() throws InterruptedException {
         robot = new OptimizedRobot(new OptimizedController(gamepad1), new OptimizedController(gamepad2), telemetry, hardwareMap, new CenterStageControllerMapping());
@@ -43,7 +44,7 @@ public final class TeleOP extends LinearOpMode {
         robot.initializeRoadRunner();
         robot.getInternalRR().setPoseEstimate(endPos);
 
-        airplane = robot.getMotor("airplane", Direction.REVERSE);
+        airplane = robot.getMotorEx("airplane", Direction.REVERSE);
 
         flipperLeft = robot.getServo("flipperLeft");
         flipperRight = robot.getServo("flipperRight");
@@ -51,9 +52,9 @@ public final class TeleOP extends LinearOpMode {
         flipperLeft.setPosition(flipperStoragePos);
         flipperRight.setPosition(1 - flipperStoragePos);
         outtakeServo.setPosition(outtakeStoragePos);
-        leftSlide = robot.getMotor("leftSlide", RunMode.RUN_TO_POSITION, Direction.REVERSE);
+        leftSlide = robot.getMotorEx("leftSlide", RunMode.RUN_TO_POSITION, Direction.REVERSE);
         leftSlide.setPower(liftPower);
-        rightSlide = robot.getMotor("rightSlide", RunMode.RUN_TO_POSITION);
+        rightSlide = robot.getMotorEx("rightSlide", RunMode.RUN_TO_POSITION);
         rightSlide.setPower(liftPower);
         spinnerServo = hardwareMap.crservo.get("spinnerServo");
         waitForStart();
@@ -68,6 +69,7 @@ public final class TeleOP extends LinearOpMode {
     }
 
     private void handleAirplane() {
+        airplane.setVelocity(robot.getControl("airplane") ? 1 : 0);
         airplane.setPower(robot.getControl("airplane") ? 1 : 0);
     }
 
